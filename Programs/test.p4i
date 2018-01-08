@@ -1,0 +1,122 @@
+# 1 "test.p4"
+# 1 "<built-in>"
+# 1 "<command-line>"
+# 1 "/usr/include/stdc-predef.h" 1 3 4
+# 1 "<command-line>" 2
+# 1 "test.p4"
+# 1 "/home/pankaj/Installations/p4/build/p4include/core.p4" 1
+# 23 "/home/pankaj/Installations/p4/build/p4include/core.p4"
+error {
+    NoError,
+    PacketTooShort,
+    NoMatch,
+    StackOutOfBounds,
+    HeaderTooShort,
+    ParserTimeout
+}
+
+extern packet_in {
+
+
+
+    void extract<T>(out T hdr);
+
+
+
+
+    void extract<T>(out T variableSizeHeader,
+                    in bit<32> variableFieldSizeInBits);
+
+
+
+    T lookahead<T>();
+
+    void advance(in bit<32> sizeInBits);
+
+
+    bit<32> length();
+}
+
+extern packet_out {
+
+
+
+    void emit<T>(in T hdr);
+}
+
+
+
+
+extern void verify(in bool check, in error toSignal);
+
+
+@name("NoAction")
+action NoAction() {}
+
+
+
+
+match_kind {
+
+    exact,
+
+    ternary,
+
+    lpm
+}
+# 2 "test.p4" 2
+# 1 "/home/pankaj/Installations/p4/build/p4include/ebpf_model.p4" 1
+# 29 "/home/pankaj/Installations/p4/build/p4include/ebpf_model.p4"
+extern CounterArray {
+
+
+
+    CounterArray(bit<32> max_index, bool sparse);
+
+    void increment(in bit<32> index);
+}
+# 47 "/home/pankaj/Installations/p4/build/p4include/ebpf_model.p4"
+extern array_table {
+
+    array_table(bit<32> size);
+}
+
+
+
+
+
+extern hash_table {
+
+    hash_table(bit<32> size);
+}
+
+
+
+parser parse<H>(packet_in packet, out H headers);
+control filter<H>(inout H headers, out bool accept);
+
+package ebpfFilter<H>(parse<H> prs,
+                      filter<H> filt);
+# 3 "test.p4" 2
+
+struct Headers_t {
+}
+
+parser prs(packet_in p, out Headers_t headers) {
+     state start {
+              transition accept;
+           }
+}
+
+control pipe(inout Headers_t headers, out bool pass) {
+     bool x_0;
+         @name("Reject") action Reject_0(bool rej_0) {
+           pass = rej_0;
+        }
+      apply {
+               x_0 = true;
+                Reject_0(x_0);
+             }
+}
+
+ebpfFilter<Headers_t>(prs(), pipe()) main;
